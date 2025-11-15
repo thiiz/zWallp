@@ -10,10 +10,13 @@ export function useWallpaper() {
     const applyWallpaper = async (wallpaper: Wallpaper) => {
         try {
             setLoading(true)
-            console.log('Creating wallpaper window...')
-            await invoke('create_wallpaper_window')
+            console.log('Creating and applying wallpaper atomically...')
 
-            await new Promise((resolve) => setTimeout(resolve, 1000))
+            // Use the new atomic command that creates and positions the window
+            await invoke('create_and_apply_wallpaper')
+
+            // Wait for window to be ready
+            await new Promise((resolve) => setTimeout(resolve, 500))
 
             console.log('Sending wallpaper config:', wallpaper)
             await emit('wallpaper-config', {
@@ -21,16 +24,16 @@ export function useWallpaper() {
                 source: wallpaper.source
             })
 
-            await new Promise((resolve) => setTimeout(resolve, 1000))
-
-            console.log('Applying wallpaper to desktop...')
-            await invoke('apply_wallpaper')
-
             setIsActive(true)
             console.log('Wallpaper applied successfully')
         } catch (error) {
             console.error('Failed to apply wallpaper:', error)
-            throw error
+            // Provide user-friendly error message
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to apply wallpaper. Please try again.'
+            throw new Error(errorMessage)
         } finally {
             setLoading(false)
         }

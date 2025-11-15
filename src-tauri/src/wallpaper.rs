@@ -19,7 +19,6 @@ pub enum WallpaperError {
     ProgmanNotFound,
     WorkerWNotFound,
     SetParentFailed,
-    VerificationFailed,
     MaxRetriesExceeded,
 }
 
@@ -30,7 +29,6 @@ impl std::fmt::Display for WallpaperError {
             WallpaperError::ProgmanNotFound => write!(f, "Program Manager window not found"),
             WallpaperError::WorkerWNotFound => write!(f, "WorkerW window not found after retries"),
             WallpaperError::SetParentFailed => write!(f, "Failed to set window parent to WorkerW"),
-            WallpaperError::VerificationFailed => write!(f, "Failed to verify wallpaper position"),
             WallpaperError::MaxRetriesExceeded => write!(f, "Maximum retry attempts exceeded"),
         }
     }
@@ -68,31 +66,10 @@ impl WallpaperManager {
                     #[cfg(debug_assertions)]
                     println!("[WALLPAPER][{}] ✓ Successfully positioned wallpaper on attempt {}", get_timestamp(), attempt + 1);
                     
-                    // Verify the position
                     #[cfg(debug_assertions)]
-                    println!("[WALLPAPER][{}] Verifying wallpaper position...", get_timestamp());
+                    println!("[WALLPAPER][{}] Operation completed successfully", get_timestamp());
                     
-                    match self.verify_wallpaper_position() {
-                        Ok(true) => {
-                            #[cfg(debug_assertions)]
-                            println!("[WALLPAPER][{}] ✓ Position verified successfully - wallpaper is correctly parented", get_timestamp());
-                            
-                            #[cfg(debug_assertions)]
-                            println!("[WALLPAPER][{}] Operation completed successfully", get_timestamp());
-                            
-                            return Ok(());
-                        }
-                        Ok(false) => {
-                            last_error = "Position verification failed".to_string();
-                            #[cfg(debug_assertions)]
-                            println!("[WALLPAPER][{}] ✗ Position verification failed on attempt {} - window not properly parented", get_timestamp(), attempt + 1);
-                        }
-                        Err(e) => {
-                            last_error = format!("Verification error: {}", e);
-                            #[cfg(debug_assertions)]
-                            println!("[WALLPAPER][{}] ✗ Verification error on attempt {}: {}", get_timestamp(), attempt + 1, e);
-                        }
-                    }
+                    return Ok(());
                 }
                 Err(e) => {
                     last_error = e.clone();
@@ -120,64 +97,7 @@ impl WallpaperManager {
         Err(error_msg)
     }
 
-    pub fn verify_wallpaper_position(&self) -> Result<bool, String> {
-        #[cfg(debug_assertions)]
-        println!("[WALLPAPER][{}] Starting position verification", get_timestamp());
-        
-        let wallpaper_hwnd = self.wallpaper_hwnd
-            .ok_or_else(|| {
-                let error = WallpaperError::WindowNotFound.to_string();
-                #[cfg(debug_assertions)]
-                println!("[WALLPAPER][{}] ✗ Verification failed: {}", get_timestamp(), error);
-                error
-            })?;
-        
-        let workerw_hwnd = self.workerw_hwnd
-            .ok_or_else(|| {
-                let error = WallpaperError::WorkerWNotFound.to_string();
-                #[cfg(debug_assertions)]
-                println!("[WALLPAPER][{}] ✗ Verification failed: {}", get_timestamp(), error);
-                error
-            })?;
-        
-        #[cfg(debug_assertions)]
-        println!("[WALLPAPER][{}] Checking parent relationship:", get_timestamp());
-        
-        #[cfg(debug_assertions)]
-        println!("[WALLPAPER][{}]   - Wallpaper window HWND: {}", get_timestamp(), wallpaper_hwnd);
-        
-        #[cfg(debug_assertions)]
-        println!("[WALLPAPER][{}]   - Expected parent (WorkerW) HWND: {}", get_timestamp(), workerw_hwnd);
-        
-        unsafe {
-            let wallpaper_hwnd_win = HWND(wallpaper_hwnd as *mut _);
-            let parent = GetParent(wallpaper_hwnd_win).ok();
-            
-            if let Some(parent_hwnd) = parent {
-                let parent_value = parent_hwnd.0 as isize;
-                let is_correct = parent_value == workerw_hwnd;
-                
-                #[cfg(debug_assertions)]
-                println!("[WALLPAPER][{}]   - Actual parent HWND: {}", get_timestamp(), parent_value);
-                
-                #[cfg(debug_assertions)]
-                {
-                    if is_correct {
-                        println!("[WALLPAPER][{}] ✓ Parent relationship verified - window is correctly parented to WorkerW", get_timestamp());
-                    } else {
-                        println!("[WALLPAPER][{}] ✗ Parent mismatch - expected {} but got {}", get_timestamp(), workerw_hwnd, parent_value);
-                    }
-                }
-                
-                Ok(is_correct)
-            } else {
-                #[cfg(debug_assertions)]
-                println!("[WALLPAPER][{}] ✗ Failed to retrieve parent window handle", get_timestamp());
-                
-                Ok(false)
-            }
-        }
-    }
+
 
     pub fn set_wallpaper_window(&mut self, hwnd: isize) -> Result<(), String> {
         #[cfg(debug_assertions)]
@@ -421,11 +341,31 @@ impl WallpaperManager {
                         return Err(error_msg);
                     }
                 }
+                
+                // Step 4: Force refresh the desktop by hiding and showing WorkerW
+                if let Some(workerw_hwnd_value) = self.workerw_hwnd {
+                    #[cfg(debug_assertions)]
+                    println!("[WALLPAPER][{}] Step 4: Refreshing desktop by toggling WorkerW visibility...", get_timestamp());
+                    
+                    let workerw_hwnd = HWND(workerw_hwnd_value as *mut _);
+                    
+                    // Hide WorkerW
+                    let _ = ShowWindow(workerw_hwnd, SW_HIDE);
+                    
+                    #[cfg(debug_assertions)]
+                    println!("[WALLPAPER][{}] ✓ WorkerW hidden", get_timestamp());
+                    
+                    // Show WorkerW again to refresh
+                    let _ = ShowWindow(workerw_hwnd, SW_SHOW);
+                    
+                    #[cfg(debug_assertions)]
+                    println!("[WALLPAPER][{}] ✓ WorkerW shown again (desktop refreshed)", get_timestamp());
+                }
             }
             
-            // Step 4: Release Windows API resources by clearing stored handles
+            // Step 5: Release Windows API resources by clearing stored handles
             #[cfg(debug_assertions)]
-            println!("[WALLPAPER][{}] Step 4: Releasing Windows API resources...", get_timestamp());
+            println!("[WALLPAPER][{}] Step 5: Releasing Windows API resources...", get_timestamp());
             
             self.wallpaper_hwnd = None;
             self.workerw_hwnd = None;

@@ -77,6 +77,26 @@ fn apply_wallpaper(app: tauri::AppHandle, state: State<AppState>) -> Result<(), 
         Ok(_) => {
             #[cfg(debug_assertions)]
             println!(
+                "[WALLPAPER][{}] ✓ Wallpaper positioned successfully",
+                get_timestamp()
+            );
+
+            // Drop the lock before showing the window
+            drop(manager);
+
+            // Show the window now that it's properly positioned
+            #[cfg(debug_assertions)]
+            println!("[WALLPAPER][{}] Showing wallpaper window", get_timestamp());
+
+            wallpaper_window.show().map_err(|e| {
+                let error_msg = format!("Failed to show window: {}", e);
+                #[cfg(debug_assertions)]
+                println!("[WALLPAPER][{}] ✗ {}", get_timestamp(), error_msg);
+                error_msg
+            })?;
+
+            #[cfg(debug_assertions)]
+            println!(
                 "[WALLPAPER][{}] ✓ apply_wallpaper completed successfully",
                 get_timestamp()
             );
