@@ -13,6 +13,17 @@ export default defineConfig({
     //
     // 1. prevent vite from obscuring rust errors
     clearScreen: false,
+
+    // Include wallpaper.html in build
+    publicDir: 'public',
+    build: {
+        rollupOptions: {
+            input: {
+                main: path.resolve(__dirname, 'index.html'),
+                wallpaper: path.resolve(__dirname, 'wallpaper.html')
+            }
+        }
+    },
     // 2. tauri expects a fixed port, fail if that port is not available
     server: {
         port: 1420,

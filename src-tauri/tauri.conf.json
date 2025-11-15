@@ -29,7 +29,8 @@
         "enable": true,
         "scope": [
           "$APPDATA/**",
-          "$RESOURCE/**"
+          "$RESOURCE/**",
+          "**"
         ]
       },
       "capabilities": [
@@ -49,8 +50,23 @@
             "core:window:allow-start-dragging",
             "core:event:allow-listen",
             "core:event:allow-unlisten",
+            "core:event:allow-emit",
+            "core:event:allow-emit-to",
             "dialog:allow-open",
             "dialog:default",
+            "fs:allow-read-file",
+            "fs:default"
+          ]
+        },
+        {
+          "identifier": "wallpaper-capability",
+          "description": "Capability for the wallpaper window",
+          "windows": [
+            "wallpaper"
+          ],
+          "permissions": [
+            "core:event:allow-listen",
+            "core:event:allow-unlisten",
             "fs:allow-read-file",
             "fs:default"
           ]
@@ -64,7 +80,7 @@
         "height": 800,
         "minWidth": 800,
         "minHeight": 600,
-        "useHttpsScheme": true,
+        "useHttpsScheme": false,
         "decorations": false
       }
     ]

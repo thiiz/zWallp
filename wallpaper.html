@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Wallpaper</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body,
+            html {
+                width: 100vw;
+                height: 100vh;
+                overflow: hidden;
+                background: #000;
+            }
+
+            #wallpaper-container {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #wallpaper-container video,
+            #wallpaper-container img,
+            #wallpaper-container iframe {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border: none;
+            }
+
+            #loading {
+                color: white;
+                font-family:
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+                text-align: center;
+            }
+
+            .spinner {
+                width: 50px;
+                height: 50px;
+                border: 4px solid rgba(255, 255, 255, 0.3);
+                border-top-color: white;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 20px;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="wallpaper-container">
+            <div id="loading">
+                <div class="spinner"></div>
+                <h2>Waiting for wallpaper...</h2>
+                <p style="margin-top: 10px; opacity: 0.7">
+                    Listening for configuration
+                </p>
+                <p
+                    id="debug-info"
+                    style="margin-top: 20px; font-size: 12px; opacity: 0.5"
+                ></p>
+            </div>
+        </div>
+
+        <script>
+            // Immediate test
+            console.log('=== WALLPAPER SCRIPT LOADED ===')
+            document.getElementById('debug-info').textContent =
+                'Script loaded at ' + new Date().toLocaleTimeString()
+        </script>
+
+        <script>
+            window.addEventListener('DOMContentLoaded', async () => {
+                const container = document.getElementById('wallpaper-container')
+                const loading = document.getElementById('loading')
+
+                console.log('Wallpaper window loaded')
+                console.log('Window location:', window.location.href)
+
+                // Wait for Tauri to be ready
+                let attempts = 0
+                while (!window.__TAURI__ && attempts < 50) {
+                    await new Promise((resolve) => setTimeout(resolve, 100))
+                    attempts++
+                }
+
+                if (!window.__TAURI__) {
+                    console.error('Tauri API not available after waiting!')
+                    showError('Tauri API not available')
+                    return
+                }
+
+                console.log('Tauri API is ready')
+
+                try {
+                    const unlisten = await window.__TAURI__.event.listen(
+                        'wallpaper-config',
+                        (event) => {
+                            console.log(
+                                'Received wallpaper config:',
+                                event.payload
+                            )
+                            const { type, source } = event.payload
+
+                            loading.style.display = 'none'
+
+                            let element
+
+                            if (type === 'video') {
+                                element = document.createElement('video')
+                                element.src = source
+                                element.autoplay = true
+                                element.loop = true
+                                element.muted = true
+                                element.onerror = (e) => {
+                                    console.error('Video error:', e)
+                                    showError('Failed to load video')
+                                }
+                            } else if (type === 'image') {
+                                element = document.createElement('img')
+                                element.src = source
+                                element.alt = 'Wallpaper'
+                                element.onerror = (e) => {
+                                    console.error('Image error:', e)
+                                    showError('Failed to load image')
+                                }
+                            } else if (type === 'html') {
+                                element = document.createElement('iframe')
+                                element.src = source
+                                element.title = 'Wallpaper'
+                                element.onerror = (e) => {
+                                    console.error('Iframe error:', e)
+                                    showError('Failed to load HTML content')
+                                }
+                            }
+
+                            if (element) {
+                                container.innerHTML = ''
+                                container.appendChild(element)
+                            }
+                        }
+                    )
+
+                    console.log('Event listener registered successfully')
+                } catch (err) {
+                    console.error('Failed to setup listener:', err)
+                    showError('Failed to setup event listener: ' + err.message)
+                }
+
+                function showError(message) {
+                    container.innerHTML = `
+                        <div style="color: white; text-align: center;">
+                            <h2 style="color: #ef4444; margin-bottom: 10px;">Error</h2>
+                            <p>${message}</p>
+                        </div>
+                    `
+                }
+            })
+        </script>
+    </body>
+</html>

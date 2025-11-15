@@ -3,7 +3,7 @@
 mod wallpaper;
 
 use std::sync::Mutex;
-use tauri::{State, Window};
+use tauri::State;
 use wallpaper::WallpaperManager;
 
 struct AppState {
@@ -11,8 +11,14 @@ struct AppState {
 }
 
 #[tauri::command]
-fn apply_wallpaper(window: Window, state: State<AppState>) -> Result<(), String> {
-    let hwnd = window.hwnd().map_err(|e| e.to_string())?;
+fn apply_wallpaper(app: tauri::AppHandle, state: State<AppState>) -> Result<(), String> {
+    use tauri::Manager;
+
+    let wallpaper_window = app
+        .get_webview_window("wallpaper")
+        .ok_or("Wallpaper window not found")?;
+
+    let hwnd = wallpaper_window.hwnd().map_err(|e| e.to_string())?;
     let mut manager = state.wallpaper_manager.lock().unwrap();
     manager.set_wallpaper_window(hwnd.0 as isize)
 }
@@ -24,19 +30,75 @@ fn remove_wallpaper(state: State<AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn create_wallpaper_window(app: tauri::AppHandle) -> Result<(), String> {
-    tauri::WebviewWindowBuilder::new(
+async fn create_wallpaper_window(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri::Manager;
+
+    println!("=== CREATE WALLPAPER WINDOW CALLED ===");
+
+    // Check if window already exists
+    if let Some(existing) = app.get_webview_window("wallpaper") {
+        println!("Wallpaper window already exists, showing it");
+        existing.show().map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
+    println!("Creating new wallpaper window");
+
+    let monitor = app
+        .primary_monitor()
+        .map_err(|e| format!("Failed to get monitor: {}", e))?
+        .ok_or("No monitor found")?;
+
+    let size = monitor.size();
+    println!("Monitor size: {}x{}", size.width, size.height);
+
+    println!("Building window with URL: wallpaper.html");
+    
+    // Use external URL for dev
+    let url = "http://localhost:1420/wallpaper.html";
+    println!("Using URL: {}", url);
+    
+    println!("About to call WebviewWindowBuilder::new...");
+    
+    let builder = tauri::WebviewWindowBuilder::new(
         &app,
         "wallpaper",
-        tauri::WebviewUrl::App("wallpaper".into()),
-    )
-    .title("Wallpaper")
-    .decorations(false)
-    .transparent(true)
-    .always_on_bottom(true)
-    .skip_taskbar(true)
-    .build()
-    .map_err(|e| e.to_string())?;
+        tauri::WebviewUrl::External(url.parse().map_err(|e| format!("Invalid URL: {}", e))?),
+    );
+    
+    println!("Builder created, setting title...");
+    let builder = builder.title("Wallpaper");
+    
+    println!("Calling build()...");
+    let window = builder.build().map_err(|e| {
+        eprintln!("ERROR building window: {}", e);
+        format!("Failed to build window: {}", e)
+    })?;
+    
+    println!("Window built successfully!");
+    
+    // Now configure it
+    println!("Configuring window...");
+    window.set_size(tauri::Size::Physical(tauri::PhysicalSize {
+        width: size.width,
+        height: size.height,
+    })).ok();
+    window.set_position(tauri::Position::Physical(tauri::PhysicalPosition {
+        x: 0,
+        y: 0,
+    })).ok();
+    window.set_decorations(false).ok();
+    window.set_skip_taskbar(true).ok();
+
+    println!("Wallpaper window created successfully");
+    println!("Window label: {}", window.label());
+    
+    // Open devtools for debugging
+    #[cfg(debug_assertions)]
+    {
+        window.open_devtools();
+        println!("DevTools opened for wallpaper window");
+    }
     
     Ok(())
 }

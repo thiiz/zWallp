@@ -82,7 +82,7 @@ export function WallpaperManager() {
 
             {/* Controls - Fixed at bottom */}
             <div className="flex-none">
-                <WallpaperControls hasSelection={!!selectedWallpaper} />
+                <WallpaperControls selectedWallpaper={selectedWallpaper} />
             </div>
 
             <CreateWallpaperDialog
