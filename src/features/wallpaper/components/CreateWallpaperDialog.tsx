@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, Upload, Code } from 'lucide-react'
 import { open } from '@tauri-apps/plugin-dialog'
+import { convertToAssetUrl } from '../utils/convertFilePath'
 
 interface CreateWallpaperDialogProps {
     isOpen: boolean
@@ -36,10 +37,12 @@ export function CreateWallpaperDialog({
         })
 
         if (selected) {
-            setSource(selected as string)
+            const filePath = selected as string
+            const assetUrl = convertToAssetUrl(filePath)
+            setSource(assetUrl)
             if (!name) {
                 const fileName =
-                    (selected as string)
+                    filePath
                         .split(/[\\/]/)
                         .pop()
                         ?.replace(/\.[^/.]+$/, '') || ''

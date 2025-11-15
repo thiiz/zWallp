@@ -28,12 +28,17 @@
     "lint-staged": {
         "**/*": "prettier --write --ignore-unknown"
     },
+    "resolutions": {
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0"
+    },
     "dependencies": {
         "@radix-ui/react-slot": "^1.2.0",
         "@radix-ui/react-tooltip": "^1.2.8",
         "@tailwindcss/vite": "^4.1.16",
         "@tauri-apps/api": "^2.9.0",
         "@tauri-apps/plugin-dialog": "^2.4.2",
+        "@tauri-apps/plugin-os": "^2.3.2",
         "@tauri-apps/plugin-process": "^2.3.1",
         "@tauri-apps/plugin-shell": "^2.3.3",
         "class-variance-authority": "^0.7.1",
@@ -43,7 +48,7 @@
         "react-dom": "^19.2.0",
         "react-error-boundary": "^6.0.0",
         "react-router": "^7.9.5",
-        "tailwind-merge": "^3.3.1",
+        "tailwind-merge": "^3.4.0",
         "tailwindcss-animate": "^1.0.7",
         "zod": "^4.1.12"
     },

@@ -36,8 +36,9 @@ export function WallpaperManager() {
     }
 
     return (
-        <div className="h-screen flex flex-col bg-zinc-950 text-white">
-            <header className="flex items-center justify-between px-6 py-4 bg-zinc-900 border-b border-zinc-800">
+        <div className="h-full flex flex-col bg-zinc-950 text-white overflow-hidden">
+            {/* Header - Fixed */}
+            <header className="flex-none flex items-center justify-between px-6 py-4 bg-zinc-900 border-b border-zinc-800">
                 <h1 className="text-2xl font-bold">Wallpaper Engine</h1>
                 <div className="text-sm text-zinc-400">
                     {wallpapers.length} wallpaper
@@ -45,7 +46,9 @@ export function WallpaperManager() {
                 </div>
             </header>
 
-            <div className="flex-1 flex overflow-hidden">
+            {/* Main Content - Scrollable */}
+            <div className="flex-1 flex overflow-hidden min-h-0">
+                {/* Gallery - Scrollable */}
                 <div className="flex-1 overflow-y-auto">
                     <WallpaperGallery
                         wallpapers={wallpapers}
@@ -55,8 +58,9 @@ export function WallpaperManager() {
                     />
                 </div>
 
-                <div className="w-96 flex flex-col border-l border-zinc-800">
-                    <div className="flex-1">
+                {/* Preview Panel - Fixed width, scrollable content */}
+                <div className="w-96 flex flex-col border-l border-zinc-800 flex-none">
+                    <div className="flex-1 overflow-hidden">
                         <WallpaperPreview
                             wallpaper={selectedWallpaper}
                             className="h-full"
@@ -64,7 +68,7 @@ export function WallpaperManager() {
                     </div>
 
                     {selectedWallpaper && (
-                        <div className="p-4 bg-zinc-900 border-t border-zinc-800">
+                        <div className="flex-none p-4 bg-zinc-900 border-t border-zinc-800">
                             <h3 className="font-semibold mb-1">
                                 {selectedWallpaper.name}
                             </h3>
@@ -76,7 +80,10 @@ export function WallpaperManager() {
                 </div>
             </div>
 
-            <WallpaperControls hasSelection={!!selectedWallpaper} />
+            {/* Controls - Fixed at bottom */}
+            <div className="flex-none">
+                <WallpaperControls hasSelection={!!selectedWallpaper} />
+            </div>
 
             <CreateWallpaperDialog
                 isOpen={isDialogOpen}

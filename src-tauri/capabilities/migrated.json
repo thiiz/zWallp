@@ -7,8 +7,16 @@
   ],
   "permissions": [
     "core:default",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-is-maximized",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
     "shell:allow-open",
     "shell:default",
-    "process:default"
+    "process:default",
+    "dialog:allow-open",
+    "dialog:default",
+    "fs:allow-read-file",
+    "fs:default"
   ]
 }

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { WallpaperManager } from '@/features/wallpaper'
+import { AppLayout } from '@/components/app-layout'
 
 type Tab = {
     id: string
@@ -57,64 +58,66 @@ export default function AppTabs() {
     }
 
     return (
-        <div
-            className="flex h-screen bg-zinc-900 text-white"
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-        >
-            {/* Sidebar */}
+        <AppLayout>
             <div
-                ref={sidebarRef}
-                className="flex flex-col bg-zinc-950 border-r border-zinc-800"
-                style={{ width: `${sidebarWidth}px` }}
+                className="flex h-full"
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
             >
-                {/* Tabs List */}
-                <div className="flex-1 overflow-y-auto">
-                    {tabs.map((tab) => (
-                        <div
-                            key={tab.id}
-                            className={`
-                                flex items-center justify-between px-4 py-3 cursor-pointer
-                                border-b border-zinc-800
-                                ${
-                                    activeTabId === tab.id
-                                        ? 'bg-zinc-800 border-l-2 border-l-blue-500'
-                                        : 'hover:bg-zinc-900'
-                                }
-                            `}
-                            onClick={() => setActiveTabId(tab.id)}
-                        >
-                            <span className="truncate">{tab.title}</span>
-                            {tabs.length > 1 && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation()
-                                        closeTab(tab.id)
-                                    }}
-                                    className="ml-2 text-zinc-400 hover:text-red-400 text-xl leading-none"
-                                >
-                                    ×
-                                </button>
-                            )}
-                        </div>
-                    ))}
+                {/* Sidebar */}
+                <div
+                    ref={sidebarRef}
+                    className="flex flex-col bg-zinc-950 border-r border-zinc-800 flex-none"
+                    style={{ width: `${sidebarWidth}px` }}
+                >
+                    {/* Tabs List */}
+                    <div className="flex-1 overflow-y-auto">
+                        {tabs.map((tab) => (
+                            <div
+                                key={tab.id}
+                                className={`
+                                    flex items-center justify-between px-4 py-3 cursor-pointer
+                                    border-b border-zinc-800 transition-colors
+                                    ${
+                                        activeTabId === tab.id
+                                            ? 'bg-zinc-800 border-l-2 border-l-blue-500'
+                                            : 'hover:bg-zinc-900'
+                                    }
+                                `}
+                                onClick={() => setActiveTabId(tab.id)}
+                            >
+                                <span className="truncate">{tab.title}</span>
+                                {tabs.length > 1 && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            closeTab(tab.id)
+                                        }}
+                                        className="ml-2 text-zinc-400 hover:text-red-400 text-xl leading-none"
+                                    >
+                                        ×
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Resize Handle */}
+                <div
+                    className={`
+                        w-1 cursor-col-resize hover:bg-blue-500 transition-colors flex-none
+                        ${isResizing ? 'bg-blue-500' : 'bg-transparent'}
+                    `}
+                    onMouseDown={handleMouseDown}
+                />
+
+                {/* Main Content - Scrollable */}
+                <div className="flex-1 overflow-hidden bg-zinc-900">
+                    {activeTab?.content}
                 </div>
             </div>
-
-            {/* Resize Handle */}
-            <div
-                className={`
-                    w-1 cursor-col-resize hover:bg-blue-500 transition-colors
-                    ${isResizing ? 'bg-blue-500' : 'bg-transparent'}
-                `}
-                onMouseDown={handleMouseDown}
-            />
-
-            {/* Main Content */}
-            <div className="flex-1 overflow-auto bg-zinc-900">
-                {activeTab?.content}
-            </div>
-        </div>
+        </AppLayout>
     )
 }
