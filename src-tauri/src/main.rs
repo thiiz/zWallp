@@ -3,7 +3,7 @@
 mod wallpaper;
 
 use std::sync::Mutex;
-use tauri::{Manager, State, Window};
+use tauri::{State, Window};
 use wallpaper::WallpaperManager;
 
 struct AppState {

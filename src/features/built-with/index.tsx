@@ -21,11 +21,11 @@ export default function BuiltWith() {
                 src={shadcnLogo}
                 alt="shadcn/ui"
             />
-            <LogoLink
+            {/* <LogoLink
                 href="https://powersync.com"
                 src={powersyncLogo}
                 alt="PowerSync"
-            />
+            /> */}
         </div>
     )
 }

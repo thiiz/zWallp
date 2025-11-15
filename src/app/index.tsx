@@ -1,12 +1,12 @@
 import './global.css'
 
 import AppProvider from '@/app/provider'
-import AppRouter from '@/app/router.tsx'
+import AppTabs from '@/app/tabs'
 
 function App() {
     return (
         <AppProvider>
-            <AppRouter />
+            <AppTabs />
         </AppProvider>
     )
 }

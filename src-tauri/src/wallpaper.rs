@@ -1,6 +1,5 @@
 use std::ptr::null_mut;
 use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
-use windows::Win32::Graphics::Gdi::HBRUSH;
 use windows::Win32::UI::WindowsAndMessaging::*;
 
 #[derive(Debug)]
@@ -20,9 +19,9 @@ impl WallpaperManager {
             let progman = FindWindowW(
                 windows::core::w!("Progman"),
                 windows::core::w!("Program Manager"),
-            );
+            ).map_err(|e| format!("Failed to find Program Manager: {}", e))?;
 
-            if progman.0 == 0 {
+            if progman.0.is_null() {
                 return Err("Failed to find Program Manager".to_string());
             }
 
@@ -37,18 +36,18 @@ impl WallpaperManager {
                 None,
             );
 
-            let mut workerw = HWND(0);
+            let mut workerw = HWND(null_mut());
             EnumWindows(
                 Some(enum_windows_callback),
                 LPARAM(&mut workerw as *mut _ as isize),
-            );
+            ).ok();
 
-            if workerw.0 == 0 {
+            if workerw.0.is_null() {
                 return Err("Failed to find WorkerW".to_string());
             }
 
-            let wallpaper_hwnd = HWND(hwnd);
-            SetParent(wallpaper_hwnd, workerw);
+            let wallpaper_hwnd = HWND(hwnd as *mut _);
+            SetParent(wallpaper_hwnd, workerw).ok();
             
             self.wallpaper_hwnd = Some(hwnd);
             Ok(())
@@ -58,7 +57,7 @@ impl WallpaperManager {
     pub fn remove_wallpaper(&mut self) -> Result<(), String> {
         if let Some(hwnd) = self.wallpaper_hwnd {
             unsafe {
-                SetParent(HWND(hwnd), HWND(0));
+                SetParent(HWND(hwnd as *mut _), HWND(null_mut())).ok();
             }
             self.wallpaper_hwnd = None;
         }
@@ -69,13 +68,14 @@ impl WallpaperManager {
 unsafe extern "system" fn enum_windows_callback(hwnd: HWND, lparam: LPARAM) -> windows::Win32::Foundation::BOOL {
     let workerw_ptr = lparam.0 as *mut HWND;
     
-    let shelldll_hwnd = FindWindowExW(hwnd, HWND(0), windows::core::w!("SHELLDLL_DefView"), None);
-    
-    if shelldll_hwnd.0 != 0 {
-        let next_hwnd = FindWindowExW(HWND(0), hwnd, windows::core::w!("WorkerW"), None);
-        if next_hwnd.0 != 0 {
-            *workerw_ptr = next_hwnd;
-            return windows::Win32::Foundation::BOOL(0);
+    if let Ok(shelldll_hwnd) = FindWindowExW(hwnd, HWND(null_mut()), windows::core::w!("SHELLDLL_DefView"), None) {
+        if !shelldll_hwnd.0.is_null() {
+            if let Ok(next_hwnd) = FindWindowExW(HWND(null_mut()), hwnd, windows::core::w!("WorkerW"), None) {
+                if !next_hwnd.0.is_null() {
+                    *workerw_ptr = next_hwnd;
+                    return windows::Win32::Foundation::BOOL(0);
+                }
+            }
         }
     }
     
