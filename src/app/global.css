@@ -38,6 +38,26 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    /* Wallpaper Engine Design Tokens */
+    --color-bg-primary: var(--bg-primary);
+    --color-bg-secondary: var(--bg-secondary);
+    --color-bg-tertiary: var(--bg-tertiary);
+    --color-bg-elevated: var(--bg-elevated);
+    --color-accent-primary: var(--accent-primary);
+    --color-accent-hover: var(--accent-hover);
+    --color-accent-active: var(--accent-active);
+    --color-text-primary: var(--text-primary);
+    --color-text-secondary: var(--text-secondary);
+    --color-text-tertiary: var(--text-tertiary);
+    --color-text-disabled: var(--text-disabled);
+    --color-success: var(--success);
+    --color-error: var(--error);
+    --color-warning: var(--warning);
+    --color-info: var(--info);
+    --color-border-subtle: var(--border-subtle);
+    --color-border-default: var(--border-default);
+    --color-border-strong: var(--border-strong);
 }
 
 :root {
@@ -73,6 +93,26 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
+
+    /* Wallpaper Engine Design Tokens - Light Mode (not primary theme) */
+    --bg-primary: 240 10% 98%;
+    --bg-secondary: 240 10% 96%;
+    --bg-tertiary: 240 10% 94%;
+    --bg-elevated: 240 10% 100%;
+    --accent-primary: 250 95% 65%;
+    --accent-hover: 250 95% 70%;
+    --accent-active: 250 95% 60%;
+    --text-primary: 0 0% 10%;
+    --text-secondary: 0 0% 30%;
+    --text-tertiary: 0 0% 50%;
+    --text-disabled: 0 0% 70%;
+    --success: 142 76% 36%;
+    --error: 0 84% 60%;
+    --warning: 38 92% 50%;
+    --info: 199 89% 48%;
+    --border-subtle: 240 10% 85%;
+    --border-default: 240 10% 80%;
+    --border-strong: 240 10% 70%;
 }
 
 .dark {
@@ -107,6 +147,26 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+
+    /* Wallpaper Engine Design Tokens - Dark Mode (primary theme) */
+    --bg-primary: 240 10% 8%;
+    --bg-secondary: 240 10% 11%;
+    --bg-tertiary: 240 10% 14%;
+    --bg-elevated: 240 10% 16%;
+    --accent-primary: 250 95% 65%;
+    --accent-hover: 250 95% 70%;
+    --accent-active: 250 95% 60%;
+    --text-primary: 0 0% 98%;
+    --text-secondary: 0 0% 70%;
+    --text-tertiary: 0 0% 50%;
+    --text-disabled: 0 0% 30%;
+    --success: 142 76% 36%;
+    --error: 0 84% 60%;
+    --warning: 38 92% 50%;
+    --info: 199 89% 48%;
+    --border-subtle: 240 10% 20%;
+    --border-default: 240 10% 25%;
+    --border-strong: 240 10% 30%;
 }
 
 @layer base {
@@ -122,5 +182,77 @@
     }
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+@layer utilities {
+    /* Animation utilities */
+    .animate-duration-fast {
+        animation-duration: 150ms;
+    }
+    .animate-duration-normal {
+        animation-duration: 250ms;
+    }
+    .animate-duration-slow {
+        animation-duration: 350ms;
+    }
+
+    .animate-ease-default {
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .animate-ease-in {
+        animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    }
+    .animate-ease-out {
+        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+    .animate-ease-spring {
+        animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Transition utilities */
+    .transition-fast {
+        transition-duration: 150ms;
+    }
+    .transition-normal {
+        transition-duration: 250ms;
+    }
+    .transition-slow {
+        transition-duration: 350ms;
+    }
+
+    .transition-ease-default {
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .transition-ease-in {
+        transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    }
+    .transition-ease-out {
+        transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+    .transition-ease-spring {
+        transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Glass-morphism effect */
+    .glass {
+        background: hsl(var(--bg-secondary) / 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    .glass-strong {
+        background: hsl(var(--bg-secondary) / 0.95);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+    }
+
+    /* Glow effects */
+    .glow-accent {
+        box-shadow: 0 0 20px hsl(var(--accent-primary) / 0.3);
+    }
+
+    .glow-accent-strong {
+        box-shadow: 0 0 30px hsl(var(--accent-primary) / 0.5);
     }
 }

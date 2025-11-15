@@ -5,6 +5,17 @@ export interface Wallpaper {
     thumbnail: string
     source: string
     createdAt: string
+    metadata?: {
+        resolution?: string
+        fileSize?: number
+        duration?: number
+        fps?: number
+        codec?: string
+    }
+    tags?: string[]
+    isFavorite?: boolean
+    isActive?: boolean
+    updatedAt?: string
 }
 
 export interface WallpaperSettings {
